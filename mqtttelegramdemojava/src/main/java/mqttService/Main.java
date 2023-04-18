@@ -1,7 +1,6 @@
 package mqttService;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -61,7 +60,10 @@ public class Main {
         while(true) {
             if(lastStatus != status)  {
                 System.out.printf("Status changed. Current: "+ status);
-                tnb.sendStatusNotificationToAllUsers(status);
+                if(status!=99){
+                    tnb.alertAlarm();
+                }
+                //tnb.sendStatusNotificationToAllUsers(status); #nur zum teste
                 lastStatus = status;
             }
             Thread.sleep(1000l);

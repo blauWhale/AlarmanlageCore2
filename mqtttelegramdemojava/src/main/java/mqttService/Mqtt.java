@@ -92,7 +92,7 @@ public class Mqtt implements MqttCallback {
     }
     public void turnOffAlarm() throws MqttException {
         MqttMessage message = new MqttMessage("99".getBytes());
-        client.publish("alarmanlage/numpad", message);
+        client.publish("alarmanlage/status", message);
     }
 
 

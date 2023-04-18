@@ -25,8 +25,14 @@ extends Thread implements UpdatesListener {
     public void sendStatusNotificationToAllUsers(int status) {
         System.out.println(users);
         for(Long user: users) {
-
             SendMessage reply = new SendMessage(user, "Status changed. Current: "+ status);
+            bot.execute(reply);
+        }
+    }
+
+    public void alertAlarm(){
+        for(Long user: users) {
+            SendMessage reply = new SendMessage(user, "The Alarm has been triggered!");
             bot.execute(reply);
         }
     }
