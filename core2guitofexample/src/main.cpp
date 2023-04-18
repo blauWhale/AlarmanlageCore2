@@ -76,7 +76,7 @@ void event_handler_box(struct _lv_obj_t * obj, lv_event_t event) {
   String textBtn = String(lv_msgbox_get_active_btn_text(obj));
   if(event == LV_EVENT_VALUE_CHANGED) {
     if(textBtn == "Send") {
-      mqtt_publish("alarmanlage/status", buffer.c_str());
+      mqtt_publish("alarmanlage/numpad", buffer.c_str());
     }
     buffer = "";
     close_message_box(mbox);
