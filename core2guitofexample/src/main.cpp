@@ -2,6 +2,7 @@
 #include "view.h"
 #include "networking.h"
 #include "sideled.h"
+#include <M5Core2.h>
 
 
 void event_handler_num(struct _lv_obj_t * obj, lv_event_t event);
@@ -34,7 +35,7 @@ void init_gui_elements() {
 // ----------------------------------------------------------------------------
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
-  if(String(topic) == "lvgl/screenled") {
+  if(String(topic) == "alarmanlage/screenled") {
     char * buf = (char *)malloc((sizeof(char)*(length+1)));
     memcpy(buf, payload, length);
     buf[length] = '\0';
@@ -92,6 +93,13 @@ void event_handler_ok(struct _lv_obj_t * obj, lv_event_t event) {
 
 void loop() {
   if(next_lv_task < millis()) {
+    if (digitalRead(36) ==1) {  
+       mqtt_publish("alarmanlage/status", "1");
+  } else if (digitalRead(36) ==0){
+    mqtt_publish("alarmanlage/status", "0");
+  }
+  delay(500);
+  
     lv_task_handler();
     next_lv_task = millis() + 5;
   }
@@ -100,6 +108,11 @@ void loop() {
 }
 
 void setup() {
+
+  M5.begin();             //Init M5Core2.  初始化 M5Core2
+ 
+  pinMode(36, INPUT); 
+
   init_m5();
   init_display();
   Serial.begin(115200);

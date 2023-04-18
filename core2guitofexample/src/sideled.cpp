@@ -4,16 +4,16 @@ CRGB leds[SIDELED_NUM_LEDS];
 
 
 
-uint8_t led_state = 2;
+uint8_t led_state = 1;
 
 
 void LEDtask(void *arg){
   while (1){
     if(led_state == SIDELED_STATE_ALARM) {
-      fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Yellow);
+      fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Red);
       FastLED.show();
       delay(1000);
-      fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Green);
+      fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Blue);
       FastLED.show();
       delay(1000);
     }
