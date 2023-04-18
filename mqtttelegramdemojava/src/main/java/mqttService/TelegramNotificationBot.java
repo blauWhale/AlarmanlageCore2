@@ -21,14 +21,14 @@ extends Thread implements UpdatesListener {
         bot.setUpdatesListener(this);
         this.mqttClient=mqttClient;
     }
-
-    public void sendStatusNotificationToAllUsers(int status) {
-        System.out.println(users);
-        for(Long user: users) {
-            SendMessage reply = new SendMessage(user, "Status changed. Current: "+ status);
-            bot.execute(reply);
-        }
-    }
+// methode zum telegram msg becho sobald sich de wert gänderet het
+//    public void sendStatusNotificationToAllUsers(int status) {
+//        System.out.println(users);
+//        for(Long user: users) {
+//            SendMessage reply = new SendMessage(user, "Status changed. Current: "+ status);
+//            bot.execute(reply);
+//        }
+//    }
 
     public void alertAlarm(){
         for(Long user: users) {
@@ -81,7 +81,7 @@ extends Thread implements UpdatesListener {
             if(message.startsWith("/status")) {
                 SendMessage reply;
                 System.out.println(Main.status);
-                if (Main.status == 99){
+                if (Main.status == 0){
                     reply = new SendMessage(update.message().chat().id(),
                             "The alarm is off");
                 }else{

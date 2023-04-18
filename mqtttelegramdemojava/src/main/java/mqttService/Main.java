@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 public class Main {
     //status 0 = abwesend & status 1 = anwesend
     public static int status = 0;
+    public static int password = 0;
     private static Logger logger;
     private static Properties config;
 
@@ -25,7 +26,7 @@ public class Main {
         return false;
     }
 
-    public final static void main(String[] args) throws InterruptedException {
+    public final static void main(String[] args) throws InterruptedException, MqttException {
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.ALL);
         Logger.getGlobal().addHandler(ch);
@@ -53,17 +54,33 @@ public class Main {
             if(s.equals("alarmanlage/status")) {
                 status = Integer.parseInt(mqttMessage.toString());
             }
+
+            if(s.equals("alarmanlage/numpad")) {
+                password = Integer.parseInt(mqttMessage.toString());
+            }
         });
 
+
         int lastStatus = status;
+        int lastPassword = password;
 
         while(true) {
             if(lastStatus != status)  {
                 System.out.printf("Status changed. Current: "+ status);
-                if(status!=99){
+                if(status!=0){
                     tnb.alertAlarm();
                 }
-                //tnb.sendStatusNotificationToAllUsers(status); #nur zum teste
+                //tnb.sendStatusNotificationToAllUsers(status);
+                lastStatus = status;
+            }
+            if(lastPassword != password)  {
+                if(password==456){
+                    mqttClient.turnOffAlarm();
+                    mqttClient.resetPassword();
+                }else{
+                    //
+                }
+                //tnb.sendStatusNotificationToAllUsers(status);
                 lastStatus = status;
             }
             Thread.sleep(1000l);
