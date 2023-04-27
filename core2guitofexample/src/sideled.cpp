@@ -4,7 +4,7 @@ CRGB leds[SIDELED_NUM_LEDS];
 
 
 
-uint8_t led_state = 1;
+uint8_t led_state = 0;
 
 
 void LEDtask(void *arg){
