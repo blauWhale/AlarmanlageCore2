@@ -91,8 +91,24 @@ public class Mqtt implements MqttCallback {
         logger.info("Disconnected");
     }
     public void turnOffAlarm() throws MqttException {
-        MqttMessage message = new MqttMessage("0".getBytes());
-        client.publish("alarmanlage/status", message);
+        MqttMessage statusMessage = new MqttMessage("1".getBytes());
+        client.publish("alarmanlage/status", statusMessage);
+
+        MqttMessage alarmMessage = new MqttMessage("0".getBytes());
+        client.publish("alarmanlage/alarm", alarmMessage);
+    }
+
+    public void armAlarm() throws MqttException {
+        if(!(Main.motion==1)){ //Alarm can't be armed if motion is detected
+            MqttMessage message = new MqttMessage("0".getBytes());
+            client.publish("alarmanlage/status", message);
+        }
+
+    }
+
+    public void testAlarm() throws MqttException {
+            MqttMessage message = new MqttMessage("1".getBytes());
+            client.publish("alarmanlage/alarm", message);
     }
 
     public void resetPassword() throws MqttException {

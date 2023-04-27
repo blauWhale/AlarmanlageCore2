@@ -21,14 +21,14 @@ extends Thread implements UpdatesListener {
         bot.setUpdatesListener(this);
         this.mqttClient=mqttClient;
     }
-// methode zum telegram msg becho sobald sich de wert gänderet het
-//    public void sendStatusNotificationToAllUsers(int status) {
-//        System.out.println(users);
-//        for(Long user: users) {
-//            SendMessage reply = new SendMessage(user, "Status changed. Current: "+ status);
-//            bot.execute(reply);
-//        }
-//    }
+
+    public void sendStatusNotificationToAllUsers(int status) {
+        System.out.println(users);
+        for(Long user: users) {
+            SendMessage reply = new SendMessage(user, "Status changed. Current: "+ status);
+            bot.execute(reply);
+        }
+    }
 
     public void alertAlarm(){
         for(Long user: users) {
@@ -71,22 +71,52 @@ extends Thread implements UpdatesListener {
                     bot.execute(reply);
                 }
             }
-            if(message.startsWith("/off")) {
+            if(message.startsWith("/disarm")) {
                 try {
                     mqttClient.turnOffAlarm();
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
             }
+            if(message.startsWith("/arm")) {
+                try {
+                    mqttClient.armAlarm();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(message.startsWith("/testTrigger")) {
+                try {
+                    mqttClient.testAlarm();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
             if(message.startsWith("/status")) {
                 SendMessage reply;
                 System.out.println(Main.status);
                 if (Main.status == 0){
                     reply = new SendMessage(update.message().chat().id(),
-                            "The alarm is off");
+                            "The Status is: Abwesend");
                 }else{
                     reply = new SendMessage(update.message().chat().id(),
-                            "The alarm is on");
+                            "The Status is: Anwesend");
+                }
+                bot.execute(reply);
+            }
+
+            if(message.startsWith("/alarm")) {
+                SendMessage reply;
+                System.out.println(Main.status);
+                if (Main.alarm == 1){
+                    reply = new SendMessage(update.message().chat().id(),
+                            "Alarm!");
+                }else{
+                    reply = new SendMessage(update.message().chat().id(),
+                            "Kein Alarm");
                 }
                 bot.execute(reply);
             }

@@ -1,6 +1,7 @@
 package mqttService;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -11,9 +12,13 @@ import java.util.logging.Logger;
 public class Main {
     //status 0 = abwesend & status 1 = anwesend
     public static int status = 0;
-    public static int password = 0;
+    public static int motion = 0;
+    public static int numpad = 0;
+    public static int alarm = 0;
     private static Logger logger;
     private static Properties config;
+    public static int masterPassword=0;
+
 
     private static boolean loadConfig() {
         config = new Properties();
@@ -46,6 +51,7 @@ public class Main {
         try {
             mqttClient.start();
             mqttClient.subscribe("alarmanlage/#");
+            mqttClient.publish("alarmanlage/masterPassword","1234");
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -55,34 +61,49 @@ public class Main {
                 status = Integer.parseInt(mqttMessage.toString());
             }
 
+            if(s.equals("alarmanlage/motion")) {
+                motion = Integer.parseInt(mqttMessage.toString());
+            }
+
+            if(s.equals("alarmanlage/masterPassword")) {
+                masterPassword = Integer.parseInt(mqttMessage.toString());
+            }
+
             if(s.equals("alarmanlage/numpad")) {
-                password = Integer.parseInt(mqttMessage.toString());
+                numpad = Integer.parseInt(mqttMessage.toString());
+            }
+
+            if(s.equals("alarmanlage/alarm")) {
+                alarm = Integer.parseInt(mqttMessage.toString());
             }
         });
 
 
         int lastStatus = status;
-        int lastPassword = password;
 
         while(true) {
+
             if(lastStatus != status)  {
-                System.out.printf("Status changed. Current: "+ status);
-                if(status!=0){
+                System.out.println("Status changed. Current: "+ status);
+                if(motion!=0 && status==0){
                     tnb.alertAlarm();
                 }
                 //tnb.sendStatusNotificationToAllUsers(status);
                 lastStatus = status;
             }
-            if(lastPassword != password)  {
-                if(password==456){
-                    mqttClient.turnOffAlarm();
-                    mqttClient.resetPassword();
-                }else{
-                    //
-                }
+            int password = numpad;
+            if(masterPassword == password)  {
+                System.out.println(password);
+                System.out.println(masterPassword);
+                mqttClient.turnOffAlarm();
+                mqttClient.resetPassword();
                 //tnb.sendStatusNotificationToAllUsers(status);
                 lastStatus = status;
             }
+            if(alarm==1){
+                tnb.alertAlarm();
+            }
+
             Thread.sleep(1000l);
         }
 
