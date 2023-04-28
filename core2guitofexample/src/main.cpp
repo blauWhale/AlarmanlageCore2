@@ -17,15 +17,21 @@ void event_handler_box(struct _lv_obj_t * obj, lv_event_t event);
 void init_gui_elements();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void triggerAlarm(); 
-void turnAlarmOff();
+void play_tone();
+void checkAlarm();
+void checkAlarmDuration();
 
 unsigned long next_lv_task = 0;
 
 lv_obj_t * led;
 
 bool anwesenheit = true;
+bool alarmIsActive = false;
 
 MFRC522 mfrc522(0x28); 
+
+unsigned long alarmStartTime = 0;
+const unsigned long ALARM_DURATION = 30000;
 
 void init_gui_elements() {
   int c = 1;
@@ -78,7 +84,24 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     }
   }
 
-  if(String(topic) == "lvgl/sideled" && length == 1) {
+  if(String(topic) == "alarmanlage/alarm") {
+    char * buf = (char *)malloc((sizeof(char)*(length+1)));
+    memcpy(buf, payload, length);
+    buf[length] = '\0';
+    String payloadS = String(buf);
+    payloadS.trim();
+    Serial.println(payloadS);
+    if(payloadS == "1") {
+      alarmIsActive=true;
+    }
+    if(payloadS == "0") {
+      alarmIsActive=false;
+    }
+  
+  }
+
+
+  if(String(topic) == "alarmanlage/sideled" && length == 1) {
     set_sideled_state(((uint8_t)payload[0]) - '0');
   }
 }
@@ -126,11 +149,20 @@ void event_handler_ok(struct _lv_obj_t * obj, lv_event_t event) {
   }
 }
 
+
+
+
+
+// ----------------------------------------------------------------------------
+// Alarm tone
+// ----------------------------------------------------------------------------
+
 const uint16_t SAMPLE_RATE = 44100; // Audio sample rate in Hz
 const uint16_t AMPLITUDE = 10000; // Audio amplitude
 const uint16_t DURATION_MS = 1000; // Audio duration in milliseconds
 
-void play_tone(float frequency) {
+void play_tone() {
+  float frequency = 444.0;
   // Generate a sine wave audio sample
   uint16_t buffer_size = DURATION_MS * SAMPLE_RATE / 1000;
   uint16_t* buffer = new uint16_t[buffer_size];
@@ -144,6 +176,13 @@ void play_tone(float frequency) {
   // Deallocate the buffer
   delete[] buffer;
 }
+
+
+
+// ----------------------------------------------------------------------------
+// Badge tone
+// ----------------------------------------------------------------------------
+
 
 void read_tag(){
   if (mfrc522.PICC_IsNewCardPresent()){
@@ -163,15 +202,46 @@ void read_tag(){
   mfrc522.PCD_StopCrypto1(); // Stop encryption
 }
 
+
+
+bool isAlarmDurationExceeded = false; // Flag to track if alarm duration has been exceeded
+
+void checkAlarmDuration() {
+  if (millis() - alarmStartTime > ALARM_DURATION) {
+    Serial.println("Alarm has been active for 30 seconds");
+    isAlarmDurationExceeded = true;
+  }
+}
+
+void checkAlarm() {
+  if (alarmIsActive) {
+    if (alarmStartTime == 0) {
+      alarmStartTime = millis(); // Start the alarm timer
+      play_tone();
+    } else {
+      checkAlarmDuration();
+      if (!isAlarmDurationExceeded) {
+        play_tone();
+      }
+    }
+    Serial.println("Alarm is going off");
+   
+  } else {
+    alarmStartTime = 0;
+    isAlarmDurationExceeded = false; // Reset the alarm duration exceeded flag
+  }
+}
+
 void triggerAlarm(){
-  //mqtt_publish("alarmanlage/screenled", "on");
+  mqtt_publish("alarmanlage/screenled", "on");
+  mqtt_publish("alarmanlage/sideled", "1");
   mqtt_publish("alarmanlage/alarm", "1");
-  play_tone(440.0); // Play a 440Hz tone
 }
 
 void loop() {
   if(next_lv_task < millis()) {
-    read_tag();
+    checkAlarm();
+    //read_tag();
     if (digitalRead(36) == 1 ) {  
       mqtt_publish("alarmanlage/motion", "1");
       if(!anwesenheit){
@@ -183,7 +253,6 @@ void loop() {
       
   } else if (digitalRead(36) == 0){
     mqtt_publish("alarmanlage/motion", "0");
-    //mqtt_publish("alarmanlage/screenled", "off");
   }
   delay(500);
   
