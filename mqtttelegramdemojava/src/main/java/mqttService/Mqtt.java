@@ -96,6 +96,12 @@ public class Mqtt implements MqttCallback {
 
         MqttMessage alarmMessage = new MqttMessage("0".getBytes());
         client.publish("alarmanlage/alarm", alarmMessage);
+
+        MqttMessage screenledMessage = new MqttMessage("off".getBytes());
+        client.publish("alarmanlage/screenled", screenledMessage);
+
+        MqttMessage ledMessage = new MqttMessage("0".getBytes());
+        client.publish("alarmanlage/sideled", ledMessage);
     }
 
     public void armAlarm() throws MqttException {
