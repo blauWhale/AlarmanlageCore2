@@ -25,7 +25,7 @@ unsigned long next_lv_task = 0;
 
 lv_obj_t * led;
 
-bool anwesenheit = true;
+bool anwesenheit = false;
 bool alarmIsActive = false;
 
 MFRC522 mfrc522(0x28); 
@@ -99,7 +99,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     }
   
   }
-
 
   if(String(topic) == "alarmanlage/sideled" && length == 1) {
     set_sideled_state(((uint8_t)payload[0]) - '0');
@@ -217,11 +216,11 @@ void checkAlarm() {
   if (alarmIsActive) {
     if (alarmStartTime == 0) {
       alarmStartTime = millis(); // Start the alarm timer
-      play_tone();
+      //play_tone();
     } else {
       checkAlarmDuration();
       if (!isAlarmDurationExceeded) {
-        play_tone();
+        //play_tone();
       }
     }
     Serial.println("Alarm is going off");

@@ -84,7 +84,6 @@ public class Main {
         while(true) {
 
             if(lastStatus != status)  {
-                System.out.println("Status changed. Current: "+ status);
                 if(motion!=0 && status==0){
                     tnb.alertAlarm();
                 }

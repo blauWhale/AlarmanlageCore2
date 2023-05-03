@@ -12,10 +12,10 @@ void LEDtask(void *arg){
     if(led_state == SIDELED_STATE_ALARM) {
       fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Red);
       FastLED.show();
-      delay(1000);
+      delay(500);
       fill_solid(leds, SIDELED_NUM_LEDS, CRGB::Blue);
       FastLED.show();
-      delay(1000);
+      delay(500);
     }
     else if(led_state == SIDELED_STATE_FUN) {
       for(int a = 0; a < SIDELED_NUM_LEDS; a++) {
