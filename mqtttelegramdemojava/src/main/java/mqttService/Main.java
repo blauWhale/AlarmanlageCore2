@@ -4,6 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -17,7 +18,8 @@ public class Main {
     public static int alarm = 0;
     private static Logger logger;
     private static Properties config;
-    public static int masterPassword=0;
+    public static Integer masterPassword=1234;
+    public static ArrayList<Integer> passwords = new ArrayList<>();
 
 
     private static boolean loadConfig() {
@@ -32,6 +34,7 @@ public class Main {
     }
 
     public final static void main(String[] args) throws InterruptedException, MqttException {
+        passwords.add(masterPassword);
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.ALL);
         Logger.getGlobal().addHandler(ch);
@@ -65,10 +68,9 @@ public class Main {
                 motion = Integer.parseInt(mqttMessage.toString());
             }
 
-            if(s.equals("alarmanlage/masterPassword")) {
-                masterPassword = Integer.parseInt(mqttMessage.toString());
-            }
-
+//            if(s.equals("alarmanlage/masterPassword")) {
+//                masterPassword = Integer.parseInt(mqttMessage.toString());
+//            }
             if(s.equals("alarmanlage/numpad")) {
                 numpad = Integer.parseInt(mqttMessage.toString());
             }
@@ -90,8 +92,8 @@ public class Main {
                 //tnb.sendStatusNotificationToAllUsers(status);
                 lastStatus = status;
             }
-            int password = numpad;
-            if(masterPassword == password)  {
+            int password = Integer.parseInt(String.valueOf(numpad));
+            if(passwords.contains(password))  {
                 System.out.println(password);
                 System.out.println(masterPassword);
                 mqttClient.turnOffAlarm();

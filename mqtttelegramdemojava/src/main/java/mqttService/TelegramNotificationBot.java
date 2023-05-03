@@ -120,6 +120,15 @@ extends Thread implements UpdatesListener {
                 }
                 bot.execute(reply);
             }
+
+            if(message.startsWith("/addPassword")) {
+
+                Integer parameter = Integer.parseInt(message.replace("/addPassword ",""));
+                Main.passwords.add(parameter);
+                System.out.println(Main.passwords);
+                SendMessage  reply = new SendMessage(update.message().chat().id(), "Passwort gespeichert");
+                bot.execute(reply);
+            }
         }
 
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
