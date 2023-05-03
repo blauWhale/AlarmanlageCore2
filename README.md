@@ -17,7 +17,7 @@ Das Codebedienteil befindet sich neben der Eingangstür außerhalb des Hauses un
 
 Die Alarmanlage kann über den Telegram Bot in den Zuständen "Anwesend" und "Abwesend" geschaltet werden. Der Zustand der Alarmanlage, ob "Kein Alarm" oder "Alarm", kann ebenfalls über den Telegram Bot abgefragt werden. Bei einem Alarm werden die Bewohner per Telegram Bot informiert. Der akustische Alarm stellt sich nach 30 Sekunden ab oder wenn die Alarmanlage über das Codebedienteil auf den Zustand "Anwesend" gestellt wurde. Der optische Alarm bleibt so lange bestehen, bis die Alarmanlage über das Codebedienteil auf den Zustand "Anwesend" gestellt wurde.
 
-![Concept Structure](concept.jpg)
+![Concept Structure](concept.png)
 
 ## Dokumentation
 
