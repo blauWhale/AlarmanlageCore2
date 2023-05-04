@@ -5,9 +5,12 @@
 #include <M5Core2.h>
 #include <Speaker.h>
 #include "MFRC522_I2C.h"
+#include "NfcAdapter.h"
+
 
 #define SS_PIN 10
 #define RST_PIN 9
+
 
 
 
@@ -20,12 +23,14 @@ void triggerAlarm();
 void play_tone();
 void checkAlarm();
 void checkAlarmDuration();
+void dump_byte_array(byte *buffer, byte bufferSize);
+void read_nfcTag();
 
 unsigned long next_lv_task = 0;
 
 lv_obj_t * led;
 
-bool anwesenheit = false;
+bool anwesenheit = true;
 bool alarmIsActive = false;
 
 MFRC522 mfrc522(0x28); 
@@ -61,10 +66,10 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     String payloadS = String(buf);
     payloadS.trim();
     Serial.println(payloadS);
-    if(payloadS == "on") {
+    if(payloadS == "1") {
       lv_led_on(led);
     }
-    if(payloadS == "off") {
+    if(payloadS == "0") {
       lv_led_off(led);
     }
   }
@@ -179,28 +184,67 @@ void play_tone() {
 
 
 // ----------------------------------------------------------------------------
-// Badge tone
+// Badge Reader
 // ----------------------------------------------------------------------------
-
-
-void read_tag(){
-  if (mfrc522.PICC_IsNewCardPresent()){
-    Serial.print("The RFID is reading this: ");
-    for (byte i = 0; i < mfrc522.uid.size; i++) {  // Print the card's serial number (in hex)
-      Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? "0" : "");
-      Serial.print(mfrc522.uid.uidByte[i], HEX);
-    }
-    Serial.println();
-
-    // Uncomment the following line to read the data from the tag (if it contains data)
-    //mfrc522.PCD_ReadDataBlock(blockAddr, buffer, &len);
+void dump_byte_array(byte *buffer, byte bufferSize) {
+  for (byte i = 0; i < bufferSize; i++) {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], HEX);
   }
-    
-  
-  mfrc522.PICC_HaltA();      // Stop reading
-  mfrc522.PCD_StopCrypto1(); // Stop encryption
 }
 
+byte uidBytes[7]; // Global variable to store UID
+bool isTagPresent = false; // Global variable to track if a tag is present
+
+
+
+void read_tag() {
+  // Check if NFC is available and enabled
+  mfrc522.PCD_Init();
+
+  // Look for new cards
+  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
+    // Reset UID and tag present flag
+    memset(uidBytes, 0, sizeof(uidBytes));
+    isTagPresent = false;
+
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
+    return;
+  }
+
+  // Save the UID into the global variable
+  memcpy(uidBytes, mfrc522.uid.uidByte, sizeof(uidBytes));
+
+  // Print the card's serial number
+  Serial.print("The RFID is reading this: ");
+  for (byte i = 0; i < mfrc522.uid.size; i++) {
+    Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? "0" : "");
+    Serial.print(mfrc522.uid.uidByte[i], HEX);
+  }
+  Serial.println();
+
+  // Print the card's UID
+  Serial.print("Card UID: ");
+  dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+  Serial.println();
+
+  // Print the card's data
+  Serial.print("Data: ");
+  for (byte i = 0; i < mfrc522.uid.size; i++) {
+    Serial.print((char)mfrc522.uid.uidByte[i]);
+  }
+  Serial.println();
+
+  Serial.println();
+
+  // Set the tag present flag
+  isTagPresent = true;
+
+  // Halt the NFC tag and stop crypto1 communication
+  mfrc522.PICC_HaltA();
+  mfrc522.PCD_StopCrypto1();
+}
 
 
 bool isAlarmDurationExceeded = false; // Flag to track if alarm duration has been exceeded
@@ -216,11 +260,11 @@ void checkAlarm() {
   if (alarmIsActive) {
     if (alarmStartTime == 0) {
       alarmStartTime = millis(); // Start the alarm timer
-      //play_tone();
+      play_tone();
     } else {
       checkAlarmDuration();
       if (!isAlarmDurationExceeded) {
-        //play_tone();
+        play_tone();
       }
     }
     Serial.println("Alarm is going off");
@@ -240,7 +284,7 @@ void triggerAlarm(){
 void loop() {
   if(next_lv_task < millis()) {
     checkAlarm();
-    //read_tag();
+    read_tag();
     if (digitalRead(36) == 1 ) {  
       mqtt_publish("alarmanlage/motion", "1");
       if(!anwesenheit){
