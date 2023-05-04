@@ -91,35 +91,29 @@ public class Mqtt implements MqttCallback {
         logger.info("Disconnected");
     }
     public void turnOffAlarm() throws MqttException {
-        MqttMessage statusMessage = new MqttMessage("1".getBytes());
-        client.publish("alarmanlage/status", statusMessage);
+        sendMessage("alarmanlage/status","1");
 
-        MqttMessage alarmMessage = new MqttMessage("0".getBytes());
-        client.publish("alarmanlage/alarm", alarmMessage);
+        sendMessage("alarmanlage/alarm","0");
 
-        MqttMessage screenledMessage = new MqttMessage("off".getBytes());
-        client.publish("alarmanlage/screenled", screenledMessage);
+        sendMessage("alarmanlage/screenled","0");
 
-        MqttMessage ledMessage = new MqttMessage("0".getBytes());
-        client.publish("alarmanlage/sideled", ledMessage);
+        sendMessage("alarmanlage/sideled","0");
+
     }
 
     public void armAlarm() throws MqttException {
         if(!(Main.motion==1)){ //Alarm can't be armed if motion is detected
-            MqttMessage message = new MqttMessage("0".getBytes());
-            client.publish("alarmanlage/status", message);
+            sendMessage("alarmanlage/status","0");
         }
 
     }
 
     public void testAlarm() throws MqttException {
-            MqttMessage message = new MqttMessage("1".getBytes());
-            client.publish("alarmanlage/alarm", message);
+        sendMessage("alarmanlage/alarm","1");
     }
 
     public void resetPassword() throws MqttException {
-        MqttMessage message = new MqttMessage("0".getBytes());
-        client.publish("alarmanlage/numpad", message);
+        sendMessage("alarmanlage/numpad","0");
     }
 
 

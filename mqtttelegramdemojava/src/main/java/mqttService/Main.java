@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class Main {
     //status 0 = abwesend & status 1 = anwesend
-    public static int status = 0;
+    public static int status = 1;
     public static int motion = 0;
     public static int numpad = 0;
     public static int alarm = 0;

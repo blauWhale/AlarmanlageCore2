@@ -43,10 +43,19 @@ extends Thread implements UpdatesListener {
             if(update.message() == null) continue;
             String message = update.message().text();
             if(message == null) continue;
-            if(message.startsWith("/help")) {
-                SendMessage reply = new SendMessage(update.message().chat().id(), "Use /subscribe to subscribe to temperature updates. Use /unsubscribe to leave");
+            if (message.startsWith("/help")) {
+                SendMessage reply = new SendMessage(update.message().chat().id(),
+                        "Use /subscribe to subscribe to alarm updates.\n" +
+                                "Use /unsubscribe to stop receiving updates.\n" +
+                                "Use /disarm to disarm the alarm.\n" +
+                                "Use /arm to arm the alarm.\n" +
+                                "Use /testTrigger to test the alarm.\n" +
+                                "Use /status to check the current status.\n" +
+                                "Use /alarm to check if there is an alarm.\n" +
+                                "Use /addPassword <password> to add a password (4-digit number).");
                 bot.execute(reply);
             }
+
             if(message.startsWith("/subscribe")) {
                 if(!users.contains(update.message().chat().id())) {
                     users.add(update.message().chat().id());
@@ -55,7 +64,7 @@ extends Thread implements UpdatesListener {
                     bot.execute(reply);
                 }else{
                     SendMessage reply = new SendMessage(update.message().chat().id(),
-                            "You are already subscribed the temperature notifications!");
+                            "You are already subscribed the alarm notifications!");
                     bot.execute(reply);
                 }
             }
@@ -121,14 +130,30 @@ extends Thread implements UpdatesListener {
                 bot.execute(reply);
             }
 
-            if(message.startsWith("/addPassword")) {
+            if (message.startsWith("/addPassword")) {
+                try {
+                    Integer parameter = Integer.parseInt(message.replace("/addPassword ", ""));
 
-                Integer parameter = Integer.parseInt(message.replace("/addPassword ",""));
-                Main.passwords.add(parameter);
-                System.out.println(Main.passwords);
-                SendMessage  reply = new SendMessage(update.message().chat().id(), "Passwort gespeichert");
-                bot.execute(reply);
+                    // Check if the parameter is a 4-digit number
+                    if (parameter < 1000 || parameter > 9999) {
+                        throw new IllegalArgumentException("Invalid password format. Please enter a 4-digit number.");
+                    }
+
+                    Main.passwords.add(parameter);
+                    System.out.println(Main.passwords);
+                    SendMessage reply = new SendMessage(update.message().chat().id(), "Passwort gespeichert");
+                    bot.execute(reply);
+                } catch (NumberFormatException e) {
+                    // Handle the case when the input is not a valid integer
+                    SendMessage reply = new SendMessage(update.message().chat().id(), "Invalid input. Please enter a valid 4-digit number.");
+                    bot.execute(reply);
+                } catch (IllegalArgumentException e) {
+                    // Handle the case when the input is not a 4-digit number
+                    SendMessage reply = new SendMessage(update.message().chat().id(), e.getMessage());
+                    bot.execute(reply);
+                }
             }
+
         }
 
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
