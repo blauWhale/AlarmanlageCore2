@@ -1,5 +1,9 @@
 # AlarmanlageCore2
 
+## Video
+
+[Vorstellung des Miniprojektes als Video](https://youtu.be/gDgIRGZKW_A)
+
 ## Einleitung
 
 Das Projekt beinhaltet den Bau eines Modells eines Hauses oder einer Wohnung mit 2 Räumen und einer Eingangstür. Es wird eine Alarmanlage entwickelt, die über zwei Zustände verfügt: Anwesend und Abwesend. 
